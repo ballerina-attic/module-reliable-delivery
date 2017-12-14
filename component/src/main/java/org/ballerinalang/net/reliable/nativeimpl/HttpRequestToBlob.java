@@ -38,7 +38,7 @@ import java.io.IOException;
 import static org.ballerinalang.net.http.Constants.TRANSPORT_MESSAGE;
 
 /**
- * Ballerina native function to encode http:Request to blob
+ * Ballerina native function to encode http:Request to blob.
  */
 @BallerinaFunction(packageName = "ballerina.net.reliable",
                    functionName = "encodeToBlob",

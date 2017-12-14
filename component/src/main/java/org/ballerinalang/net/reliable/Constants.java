@@ -19,7 +19,7 @@
 package org.ballerinalang.net.reliable;
 
 /**
- * Constants of the Ballerina Reliable connector
+ * Constants of the Ballerina Reliable connector.
  */
 public class Constants {
     public static final String PACKAGE_NAME = "ballerina.net.reliable";

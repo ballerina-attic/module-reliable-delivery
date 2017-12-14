@@ -25,15 +25,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * Util to hold serialization and deserialization methods
+ * Util to hold serialization and deserialization methods.
  */
 public class ReliableDeliveryConnectorUtils {
 
     /**
-     * Serialize given object into a byte array
-     * @param obj Object
-     * @return array of bytes
-     * @throws IOException error while serialization
+     * Serialize given object into a byte array.
+     * @param obj Object.
+     * @return array of bytes.
+     * @throws IOException error while serialization.
      */
     public static byte[] serialize(Object obj) throws IOException {
         try (ByteArrayOutputStream b = new ByteArrayOutputStream()) {
@@ -45,11 +45,11 @@ public class ReliableDeliveryConnectorUtils {
     }
 
     /**
-     * Build a object from a byte array
-     * @param bytes array of bytes
-     * @return Object
-     * @throws IOException error while deserialization
-     * @throws ClassNotFoundException error while generating the object instance
+     * Build a object from a byte array.
+     * @param bytes array of bytes.
+     * @return Object.
+     * @throws IOException error while deserialization.
+     * @throws ClassNotFoundException error while generating the object instance.
      */
     public static Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
         try (ByteArrayInputStream b = new ByteArrayInputStream(bytes)) {

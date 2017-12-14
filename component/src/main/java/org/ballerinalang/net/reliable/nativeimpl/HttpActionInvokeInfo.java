@@ -38,13 +38,13 @@ import java.util.Map;
 /**
  * Holder to store information regarding http endpoint invocation.
  * <p>
- * This will hold following information
- *  - request body
- *  - request headers
- *  - service url
- *  - path
- *  - action of the HttpClient
- *  - options of the connector
+ * This will hold following information.
+ *  - request body.
+ *  - request headers.
+ *  - service url.
+ *  - path.
+ *  - action of the HttpClient.
+ *  - options of the connector.
  *
  */
 public class HttpActionInvokeInfo implements Serializable {
@@ -61,6 +61,11 @@ public class HttpActionInvokeInfo implements Serializable {
 
     private byte[] messageBody;
 
+    /**
+     * Generate {@link HttpActionInvokeInfo} for a particular {@link HTTPCarbonMessage}
+     *
+     * @param httpCarbonMessage input http content
+     */
     public HttpActionInvokeInfo(HTTPCarbonMessage httpCarbonMessage) {
         //process carbon message and build the storable message
 
@@ -100,6 +105,11 @@ public class HttpActionInvokeInfo implements Serializable {
         }
     }
 
+    /**
+     * Generate a {@link HTTPCarbonMessage} using the content populated in the this instance
+     *
+     * @return {@link HTTPCarbonMessage}
+     */
     public HTTPCarbonMessage generateHttpRequest() {
         HTTPCarbonMessage httpCarbonMessage = HttpUtil.createHttpCarbonMessage(true);
 

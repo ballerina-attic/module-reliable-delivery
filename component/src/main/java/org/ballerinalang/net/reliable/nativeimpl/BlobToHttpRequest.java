@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * Ballerina native function to build http:Request from blob
+ * Ballerina native function to build http:Request from blob.
  */
 @BallerinaFunction(packageName = "ballerina.net.reliable",
                    functionName = "decodeHttpRequest",
@@ -73,7 +73,7 @@ public class BlobToHttpRequest extends AbstractNativeFunction {
             httpEpInvoke.setStringField(3, httpActionInvokeInfo.getConnectorOptions());
 
         } catch (IOException | ClassNotFoundException e) {
-            throw new BallerinaException("Error building struct from blob stream", e, ctx);
+            throw new BallerinaException("error building struct from blob stream", e, ctx);
         }
         return this.getBValues(httpEpInvoke);
     }
