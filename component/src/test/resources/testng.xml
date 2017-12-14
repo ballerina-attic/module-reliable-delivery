@@ -20,5 +20,9 @@ under the License.
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="ballerina-natives-test-suite">
-
+<test name="Native method tests">
+<classes>
+    <class name="org.ballerinalang.net.reliable.test.NativeSerializationTest"/>
+</classes>
+</test>
 </suite>

@@ -121,6 +121,12 @@
         <version>${ballerina.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.ballerinalang</groupId>
+        <artifactId>ballerina-launcher</artifactId>
+        <version>${ballerina.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.testng</groupId>
         <artifactId>testng</artifactId>
         <version>${org.testng.version}</version>
@@ -222,7 +228,7 @@
 
   <properties>
     <project.scm.id>my-scm-server</project.scm.id>
-    <ballerina.version>0.95.3</ballerina.version>
+    <ballerina.version>0.95.4</ballerina.version>
     <maven.findbugsplugin.version.exclude>findbugs-exclude.xml</maven.findbugsplugin.version.exclude>
     <mvn.processor.plugin.version>2.2.4</mvn.processor.plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
