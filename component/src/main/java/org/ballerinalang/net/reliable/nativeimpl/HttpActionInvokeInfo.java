@@ -88,11 +88,13 @@ public class HttpActionInvokeInfo implements Serializable {
 
         if (Constants.APPLICATION_JSON.equals(contentType)) {
             BJSON result = new BJSON(new HttpMessageDataStreamer(httpCarbonMessage).getInputStream());
+            httpCarbonMessage.waitAndReleaseAllEntities();
             httpCarbonMessage.setMessageDataSource(result);
             result.setOutputStream(new HttpMessageDataStreamer(httpCarbonMessage).getOutputStream());
             httpCarbonMessage.setAlreadyRead(true);
         } else if (Constants.APPLICATION_XML.equals(contentType)) {
             BXML result = XMLUtils.parse(new HttpMessageDataStreamer(httpCarbonMessage).getInputStream());
+            httpCarbonMessage.waitAndReleaseAllEntities();
             httpCarbonMessage.setMessageDataSource(result);
             result.setOutputStream(new HttpMessageDataStreamer(httpCarbonMessage).getOutputStream());
             httpCarbonMessage.setAlreadyRead(true);
@@ -100,6 +102,7 @@ public class HttpActionInvokeInfo implements Serializable {
             // todo: handle empty string payloads
             String payload = StringUtils
                     .getStringFromInputStream(new HttpMessageDataStreamer(httpCarbonMessage).getInputStream());
+            httpCarbonMessage.waitAndReleaseAllEntities();
             httpCarbonMessage.setMessageDataSource(new StringDataSource(payload));
             httpCarbonMessage.setAlreadyRead(true);
         }
@@ -128,6 +131,8 @@ public class HttpActionInvokeInfo implements Serializable {
             payload = new StringDataSource(new String(messageBody));
         }
         payload.setOutputStream(new HttpMessageDataStreamer(httpCarbonMessage).getOutputStream());
+
+        httpCarbonMessage.waitAndReleaseAllEntities();
 
         httpCarbonMessage.setMessageDataSource(payload);
         httpCarbonMessage.setAlreadyRead(true);

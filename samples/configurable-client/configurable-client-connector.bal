@@ -9,6 +9,7 @@ import ballerina.net.reliable.httpr;
 service<http> sampleService {
     processor:GuaranteedProcessor guaranteedConfig = {
              interval:2000,
+             retryCount:25,
              config:{ "initialContextFactory":"org.apache.activemq.jndi.ActiveMQInitialContextFactory",
                         "providerUrl":"tcp://localhost:61616",
                         "connectionFactoryName":"QueueConnectionFactory"
