@@ -5,6 +5,13 @@ import ballerina.task;
 
 public map retryCounterMap = {};
 
+@Description { value:"Struct representing a message processor in Ballerina" }
+@Field {value:"retryCount: number of time the retrying should happen before giving up"}
+@Field {value:"interval: interval from one message consume iteration to another"}
+@Field {value:"config: Configuration needed to connect to the message store"}
+@Field {value:"store: function pointer to handle storing task"}
+@Field {value:"retrieve: function pointer to handle retrival task"}
+@Field {value:"handler: function pointer to handle retrieved message"}
 public struct GuaranteedProcessor {
     int retryCount = 5;
     int interval = 5000;
@@ -18,6 +25,9 @@ public struct GuaranteedProcessor {
 
 public GuaranteedProcessor guaranteedProcessor =  null;
 
+@Description {value:"Start the message processor. This need to be called once per-ballerina startup"}
+@Param {value:"processor: Message processor instance"}
+@Return {value:"boolean: Whether the message processor successfully started or not"}
 public function <GuaranteedProcessor processor> startProcessor () (boolean){
 
     // if a processor has already registered, ignore this call
@@ -79,6 +89,5 @@ function handleMessage() returns (error) {
 }
 
 function cleanupError(error e) {
-    //log:printError("[MP] error while running the the message processor " + e.msg);
     retryCounterMap[guaranteedProcessor.taskId] = guaranteedProcessor.retryCount;
 }

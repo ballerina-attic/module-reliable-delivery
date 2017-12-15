@@ -2,6 +2,10 @@ package ballerina.net.reliable.storejms;
 
 import ballerina.net.jms;
 
+@Description {value:"Store blob stream to the jms destination"}
+@Param {value:"config: jms client configuration"}
+@Param {value:"queue: jms destination name"}
+@Param {value:"objectStream: blob stream"}
 public function store (map config, string queue, blob objectStream) {
     endpoint<jms:JmsClient> jmsEP {
     }
@@ -16,8 +20,10 @@ public function store (map config, string queue, blob objectStream) {
     jmsEP.send(queue, message);
 }
 
-@Description {value:"Get object content of the JMS message"}
-@Return {value:"any: Object Message Content"}
+@Description {value:"Retrieve blob stream from the jms destination"}
+@Param {value:"config: jms client configuration"}
+@Param {value:"queue: jms destination name"}
+@Return {value:"objectStream: blob content of the jms message"}
 public function retrieve (map config, string queue) (blob objectStream) {
     endpoint<jms:JmsClient> jmsEP {
     }
@@ -46,7 +52,7 @@ function generateClientConfiguration(map configurationMap) (jms:ClientProperties
     jms:ClientProperties properties = {initialContextFactory:initialContextFactoryValue,
                                           providerUrl:providerUrlValue,
                                           connectionFactoryName:connectionFactoryNameValue,
-                                          connectionFactoryType:"queue",
+                                          connectionFactoryType:jms:TYPE_QUEUE,
                                           acknowledgementMode:jms:SESSION_TRANSACTED
                                       };
     return properties;

@@ -6,42 +6,100 @@ import ballerina.net.reliable;
 import ballerina.net.http;
 import ballerina.net.reliable.storejms;
 
-public const string MESSAGE_STORE_DESITNATION_NAME = "_BallerinaHTTPMessageStore_";
+public const string MESSAGE_STORE_DESTINATION_NAME = "_BallerinaHTTPMessageStore_";
 
+@Description { value:"Http client connector for reliable outbound HTTP requests"}
+@Param { value:"serviceUri: Url of the service" }
+@Param { value:"connectorOptions: connector options" }
+@Param { value:"guaranteedProcessor: processor which responsible for handling guaranteed processing" }
 public connector HttpGuaranteedClient (string serviceUri, http:Options connectorOptions, processor:GuaranteedProcessor guaranteedProcessor) {
 
+    @Description { value:"GET action implementation of the reliable HTTP Connector"}
+    @Param { value:"path: Request path" }
+    @Param { value:"req: An HTTP Request struct" }
+    @Return { value:"The response message indicates safe persistance of the incoming request" }
+    @Return { value:"Error occured during HTTP reliable client storage action" }
     action get (string path, http:Request req) (http:Response, http:HttpConnectorError) {
         blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "get") ;
         return storeMessage(storableStream, guaranteedProcessor);
     }
+
+    @Description { value:"POST action implementation of the reliable HTTP Connector"}
+    @Param { value:"path: Request path" }
+    @Param { value:"req: An HTTP Request struct" }
+    @Return { value:"The response message indicates safe persistance of the incoming request" }
+    @Return { value:"Error occured during HTTP reliable client storage action" }
     action post (string path, http:Request req) (http:Response, http:HttpConnectorError) {
         blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "post") ;
         return storeMessage(storableStream, guaranteedProcessor);
     }
+
+    @Description { value:"HEAD action implementation of the reliable HTTP Connector"}
+    @Param { value:"path: Request path" }
+    @Param { value:"req: An HTTP Request struct" }
+    @Return { value:"The response message indicates safe persistance of the incoming request" }
+    @Return { value:"Error occured during HTTP reliable client storage action" }
     action head (string path, http:Request req) (http:Response, http:HttpConnectorError) {
         blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "head") ;
         return storeMessage(storableStream, guaranteedProcessor);
     }
+
+    @Description { value:"PUT action implementation of the reliable HTTP Connector"}
+    @Param { value:"path: Request path" }
+    @Param { value:"req: An HTTP Request struct" }
+    @Return { value:"The response message indicates safe persistance of the incoming request" }
+    @Return { value:"Error occured during HTTP reliable client storage action" }
     action put (string path, http:Request req) (http:Response, http:HttpConnectorError) {
         blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "put") ;
         return storeMessage(storableStream, guaranteedProcessor);
     }
+
+    @Description { value:"PATCH action implementation of the reliable HTTP Connector"}
+    @Param { value:"path: Request path" }
+    @Param { value:"req: An HTTP Request struct" }
+    @Return { value:"The response message indicates safe persistance of the incoming request" }
+    @Return { value:"Error occured during HTTP reliable client storage action" }
     action patch (string path, http:Request req) (http:Response, http:HttpConnectorError) {
         blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "patch") ;
         return storeMessage(storableStream, guaranteedProcessor);
     }
+
+    @Description { value:"DELETE action implementation of the reliable HTTP Connector"}
+    @Param { value:"path: Request path" }
+    @Param { value:"req: An HTTP Request struct" }
+    @Return { value:"The response message indicates safe persistance of the incoming request" }
+    @Return { value:"Error occured during HTTP reliable client storage action" }
     action delete (string path, http:Request req) (http:Response, http:HttpConnectorError) {
         blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "delete") ;
         return storeMessage(storableStream, guaranteedProcessor);
     }
+
+    @Description { value:"OPTIONS action implementation of the reliable HTTP Connector"}
+    @Param { value:"path: Request path" }
+    @Param { value:"req: An HTTP Request struct" }
+    @Return { value:"The response message indicates safe persistance of the incoming request" }
+    @Return { value:"Error occured during HTTP reliable client storage action" }
     action options (string path, http:Request req) (http:Response, http:HttpConnectorError) {
         blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "options") ;
         return storeMessage(storableStream, guaranteedProcessor);
     }
+
+    @Description { value:"forward action can be used to invoke an HTTP call with incoming request HTTPVerb"}
+    @Param { value:"path: Request path" }
+    @Param { value:"req: An HTTP Request struct" }
+    @Return { value:"The response message indicates safe persistance of the incoming request" }
+    @Return { value:"Error occured during HTTP reliable client storage action" }
     action forward (string path, http:Request req) (http:Response, http:HttpConnectorError) {
         blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "forward") ;
         return storeMessage(storableStream, guaranteedProcessor);
     }
+
+    @Description { value:"Invokes an HTTP call with the specified HTTP verb."}
+    @Param { value:"HTTPVerb: HTTP verb value" }
+    @Param { value:"path: Resource path " }
+    @Param { value:"req: An HTTP Request struct" }
+    @Return { value:"The response message indicates safe persistance of the incoming request" }
+    @Return { value:"Error occured during HTTP reliable client storage action" }
     action execute (string HTTPVerb, string path, http:Request req) (http:Response, http:HttpConnectorError) {
         blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, HTTPVerb) ;
         return storeMessage(storableStream, guaranteedProcessor);
@@ -137,9 +195,6 @@ public function handle (blob objectStream) (error){
     http:Response response;
     http:HttpConnectorError e;
 
-    // todo: remove this log
-    log:printDebug("[MP] request payload: " + request.getStringPayload());
-
     if ("get" == epInvoke.httpMethod) {
         response, e = httpEp.get(epInvoke.path, request);
     } else if ("post" == epInvoke.httpMethod) {
@@ -162,9 +217,6 @@ public function handle (blob objectStream) (error){
 
     if (e != null) {
         backendError = {msg:"Backend invocation failed " + e.msg};
-    } else {
-        // todo: remove this log
-        log:printDebug("[MP] response from backend: " + response.getStringPayload());
     }
 
     return backendError;
