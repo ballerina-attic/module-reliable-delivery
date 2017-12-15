@@ -155,14 +155,14 @@ function storeMessage(blob storableStream, processor:GuaranteedProcessor guarant
     try {
         transaction {
             guaranteedProcessor.store(guaranteedProcessor.config, destinationName, storableStream);
-            log:printDebug("[MP] message successfully stored in persistent store");
+            log:printDebug("message successfully stored in persistent store");
             response.setJsonPayload({status:"Message successfully received into Ballerina"});
             response.setStatusCode(202);
         } failed {
             retry 0;
         }
     } catch (error r) {
-        log:printError("[MP] error when stroing the message. " + r.msg);
+        log:printError("error when storing the message. " + r.msg);
         response.setJsonPayload({status:"Message failed to receive into Ballerina"});
         response.setStatusCode(503);
     }

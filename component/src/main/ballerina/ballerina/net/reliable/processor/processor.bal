@@ -33,7 +33,7 @@ public function <GuaranteedProcessor processor> startProcessor () (boolean){
     // if a processor has already registered, ignore this call
     // we need to have collection of processors but it is blocking on the feature of function pointer closures
     if (guaranteedProcessor != null) {
-        log:printWarn("[MP] processor is already registered and running");
+        log:printWarn("processor is already registered and running");
         return false;
     }
     guaranteedProcessor = processor;
@@ -48,9 +48,9 @@ public function <GuaranteedProcessor processor> startProcessor () (boolean){
     guaranteedProcessor.taskId = taskId;
     retryCounterMap[taskId] = guaranteedProcessor.retryCount;
     if (schedulerError != null) {
-        log:printError("[MP] task schduling failed: " + schedulerError.msg) ;
+        log:printError("task schduling failed: " + schedulerError.msg) ;
     } else {
-        log:printDebug("[MP] task schduled with ID: " + taskId);
+        log:printDebug("task schduled with ID: " + taskId);
     }
     return true;
 }
@@ -66,16 +66,16 @@ function handleMessage() returns (error) {
         retrievedMessageStream = guaranteedProcessor.retrieve(guaranteedProcessor.config, destinationName);
         string empty = "";
         if (retrievedMessageStream.toString("UTF-8") != empty) {
-            log:printDebug("[MP] message received at the processor");
+            log:printDebug("message received at the processor");
             //retrying is over
             if(retryIteration == 0) {
                 retryCounterMap[guaranteedProcessor.taskId] = guaranteedProcessor.retryCount;
-                log:printDebug("[MP] moving message to dlc due to max retry exceeded");
+                log:printDebug("moving message to dlc due to max retry exceeded");
                 guaranteedProcessor.store(guaranteedProcessor.config, destinationName+"_dlc", retrievedMessageStream);
             } else {
                 error e = guaranteedProcessor.handler(retrievedMessageStream);
                 if (e != null) {
-                    log:printDebug("[MP] endpoint invocation failed for " + (guaranteedProcessor.retryCount - retryIteration + 1) + " iteration");
+                    log:printDebug("endpoint invocation failed for " + (guaranteedProcessor.retryCount - retryIteration + 1) + " iteration");
                     retryCounterMap[guaranteedProcessor.taskId] =  retryIteration-1;
                     abort;
                 }
