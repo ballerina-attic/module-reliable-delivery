@@ -62,7 +62,7 @@ function handleMessage() returns (error) {
     string destinationName = guaranteedProcessor.destinationName;
 
     blob retrievedMessageStream;
-    transaction {
+    transaction with retries(0) {
         retrievedMessageStream = guaranteedProcessor.retrieve(guaranteedProcessor.config, destinationName);
         string empty = "";
         if (retrievedMessageStream.toString("UTF-8") != empty) {
@@ -75,15 +75,13 @@ function handleMessage() returns (error) {
             } else {
                 error e = guaranteedProcessor.handler(retrievedMessageStream);
                 if (e != null) {
-                    log:printDebug("endpoint invocation failed for " + (guaranteedProcessor.retryCount - retryIteration + 1) + " iteration");
+                    log:printError("endpoint invocation failed for " + (guaranteedProcessor.retryCount - retryIteration + 1) + " iteration");
                     retryCounterMap[guaranteedProcessor.taskId] =  retryIteration-1;
                     abort;
                 }
             }
         }
         retryCounterMap[guaranteedProcessor.taskId] = guaranteedProcessor.retryCount;
-    } failed {
-        retry 0;
     }
     return null;
 }

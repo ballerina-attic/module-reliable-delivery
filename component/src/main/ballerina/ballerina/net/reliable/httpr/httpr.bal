@@ -1,9 +1,10 @@
 package ballerina.net.reliable.httpr;
 
+import ballerina.util;
 import ballerina.log;
+import ballerina.net.http;
 import ballerina.net.reliable.processor;
 import ballerina.net.reliable;
-import ballerina.net.http;
 import ballerina.net.reliable.storejms;
 
 public const string MESSAGE_STORE_DESTINATION_NAME = "_BallerinaHTTPMessageStore_";
@@ -153,13 +154,11 @@ function storeMessage(blob storableStream, processor:GuaranteedProcessor guarant
 
     // store the message
     try {
-        transaction {
+        transaction with retries(0) {
             guaranteedProcessor.store(guaranteedProcessor.config, destinationName, storableStream);
             log:printDebug("message successfully stored in persistent store");
             response.setJsonPayload({status:"Message successfully received into Ballerina"});
             response.setStatusCode(202);
-        } failed {
-            retry 0;
         }
     } catch (error r) {
         log:printError("error when storing the message. " + r.msg);
@@ -170,54 +169,104 @@ function storeMessage(blob storableStream, processor:GuaranteedProcessor guarant
 }
 
 function convertToBlob(http:Request request, http:Options options, string serviceUri, string path, string httpMethod) (blob) {
-    var optionsJSON,_ = <json> options;
-    reliable:HttpEPInvoke epInvoke = {request:request, serviceUrl:serviceUri, path:path, httpMethod:httpMethod, connectorOptions:optionsJSON.toString()};
-    blob serialized = epInvoke.encodeToBlob();
+    string encodedPayload = util:base64Encode(request.getStringPayload());
+    reliable:HttpEPInvoke epInvoke = {request:request, serviceUrl:serviceUri, path:path, httpMethod:httpMethod, connectorOptions:options, payload:encodedPayload};
+    var epInvokeJson,_ = <json> epInvoke;
+    string epInvokeString = epInvokeJson.toString();
+    blob serialized = epInvokeString.toBlob("UTF-8");
     return serialized;
 }
 
-public function handle (blob objectStream) (error){
+public function handle (blob objectStream) (error) {
     endpoint<http:HttpClient> httpEp {
     }
 
-    reliable:HttpEPInvoke epInvoke = reliable:decodeHttpRequest(objectStream);
-    http:Request request = epInvoke.request;
+    // build EPInvoke instance
+    string epInvokeString = objectStream.toString("UTF-8");
+    var epInvokeJson, ex = <json> epInvokeString;
+    var epInvoke, er = <HttpEPInvoke> epInvokeJson;
+
+    // access the request inside EPInvoke instance
+    var request, _ = (http:Request) epInvoke.request;
+
+    // Re-generate request headers from serialized request
+    // Request headers are not getting de-serialized. Therefore we have to do that manually
+    // All the maps are getting de-serialized as <string, any>. if the original map contained <string, struct>
+    // Struct will not get de-serialized, it will stay as json. But ballerina think this is 'any' value, not json.
+    // Due to that we can't cast it to json. (I have included a native function to do this for now)
+    map requestHeaders = request.headers;
+    string[] keys = requestHeaders.keys();
+
+    request.removeAllHeaders();
+
+    // copying headers
+    int i = 0;
+    while (i < lengthof keys) {
+        json header = reliable:anyToJson(requestHeaders[keys[i]]);
+        json firstElement = header[0];
+        // ignoring params for the moment
+        json value = firstElement["value"];
+        request.addHeader(keys[i], value.toString());
+        i =  i+1;
+    }
+
+    // Setting message content
+    http:HeaderValue contentTypeHeader = request.getHeader("Content-Type");
+    string contentType = contentTypeHeader.value;
+    string payload = util:base64Decode(epInvoke.payload);
+    error payloadError;
+    
+    
+    if (contentType == "application/json") {
+        json jsonPayload;
+        jsonPayload, payloadError = <json> payload;
+        request.setJsonPayload(jsonPayload);
+    } else if (contentType == "application/xml") {
+        xml xmlPayload;
+        xmlPayload, payloadError = <xml>payload;
+        request.setXmlPayload(xmlPayload);
+    } else {
+        request.setStringPayload(payload);
+    }
+
+    if (payloadError != null) {
+        return payloadError;
+    }
+
+    // Invoking the backend
     error backendError = null;
-
-    // reconstruct http:Options
-    string optionsString = epInvoke.connectorOptions;
-    var optionsJSON,_= <json> optionsString;
-    var options,_ = <http:Options> optionsJSON;
-
+    var options,_ = (http:Options) epInvoke.connectorOptions;
     http:HttpClient client = create http:HttpClient(epInvoke.serviceUrl, options);
     bind client with httpEp;
 
     http:Response response;
-    http:HttpConnectorError e;
+    http:HttpConnectorError connectorError;
 
     if ("get" == epInvoke.httpMethod) {
-        response, e = httpEp.get(epInvoke.path, request);
+        response, connectorError = httpEp.get(epInvoke.path, request);
     } else if ("post" == epInvoke.httpMethod) {
-        response, e = httpEp.post(epInvoke.path, request);
+        response, connectorError = httpEp.post(epInvoke.path, request);
     } else if ("head" == epInvoke.httpMethod) {
-        response, e = httpEp.head(epInvoke.path, request);
+        response, connectorError = httpEp.head(epInvoke.path, request);
     } else if ("put" == epInvoke.httpMethod) {
-        response, e = httpEp.put(epInvoke.path, request);
+        response, connectorError = httpEp.put(epInvoke.path, request);
     } else if ("patch" == epInvoke.httpMethod) {
-        response, e = httpEp.patch(epInvoke.path, request);
+        response, connectorError = httpEp.patch(epInvoke.path, request);
     } else if ("delete" == epInvoke.httpMethod) {
-        response, e = httpEp.delete(epInvoke.path, request);
+        response, connectorError = httpEp.delete(epInvoke.path, request);
     } else if ("options" == epInvoke.httpMethod) {
-        response, e = httpEp.options(epInvoke.path, request);
+        response, connectorError = httpEp.options(epInvoke.path, request);
     } else if ("forward" == epInvoke.httpMethod) {
-        response, e = httpEp.forward(epInvoke.path, request);
+        response, connectorError = httpEp.forward(epInvoke.path, request);
     } else {
-        response, e = httpEp.execute(epInvoke.httpMethod, epInvoke.path, request);
+        response, connectorError = httpEp.execute(epInvoke.httpMethod, epInvoke.path, request);
     }
 
-    if (e != null) {
-        backendError = {msg:"Backend invocation failed " + e.msg};
+    if (connectorError != null) {
+        backendError = {msg:"Backend invocation failed " + connectorError.msg};
     }
+
+    println(response);
 
     return backendError;
 }
@@ -234,4 +283,62 @@ function generateMBConfiguration() (processor:GuaranteedProcessor) {
      };
     _= guaranteedConfig.startProcessor();
     return guaranteedConfig;
+}
+
+struct HttpEPInvoke {
+    string serviceUrl;
+    string path;
+    string httpMethod;
+    Request request;
+    Options connectorOptions;
+    string payload;
+}
+
+struct Request {
+    string remoteHost;
+    int port;
+    string path;
+    string method;
+    string httpVersion;
+    string userAgent;
+    map headers;
+}
+
+struct Options {
+    int port;
+    int endpointTimeout = 60000;
+    boolean enableChunking = true;
+    boolean keepAlive = true;
+    FollowRedirects followRedirects;
+    SSL ssl;
+    Retry retryConfig;
+    Proxy proxy;
+}
+
+
+struct Retry {
+    int count;
+    int interval;
+}
+
+struct SSL {
+    string trustStoreFile;
+    string trustStorePassword;
+    string keyStoreFile;
+    string keyStorePassword;
+    string sslEnabledProtocols;
+    string ciphers;
+    string sslProtocol;
+}
+
+struct FollowRedirects {
+    boolean enabled = false;
+    int maxCount = 5;
+}
+
+struct Proxy {
+    string host;
+    int port;
+    string userName;
+    string password;
 }

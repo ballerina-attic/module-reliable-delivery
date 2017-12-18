@@ -3,13 +3,12 @@ package ballerina.net.reliable;
 import ballerina.net.http;
 
 public struct HttpEPInvoke {
-    http:Request request;
     string serviceUrl;
     string path;
     string httpMethod;
-    string connectorOptions;
+    http:Request request;
+    http:Options connectorOptions;
+    string payload;
 }
 
-public native function <HttpEPInvoke request> encodeToBlob () (blob);
-
-public native function decodeHttpRequest (blob stream) (HttpEPInvoke);
+public native function anyToJson (any anyValue)(json);

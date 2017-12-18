@@ -243,35 +243,35 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.ballerinalang</groupId>
-                <artifactId>docerina-maven-plugin</artifactId>
-                <version>${docerina.maven.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>docerina</goal>
-                        </goals>
-                        <configuration>
-                            <outputDir>${project.build.directory}/docs</outputDir>
-                            <sourceDir>${connectors.source.temp.dir}</sourceDir>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.ballerinalang</groupId>
-                        <artifactId>ballerina-http</artifactId>
-                        <version>${ballerina.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.ballerinalang</groupId>
-                        <artifactId>ballerina-jms</artifactId>
-                        <version>${ballerina.jms.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.ballerinalang</groupId>-->
+                <!--<artifactId>docerina-maven-plugin</artifactId>-->
+                <!--<version>${docerina.maven.plugin.version}</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>docerina</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<outputDir>${project.build.directory}/docs</outputDir>-->
+                            <!--<sourceDir>${connectors.source.temp.dir}</sourceDir>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+                <!--<dependencies>-->
+                    <!--<dependency>-->
+                        <!--<groupId>org.ballerinalang</groupId>-->
+                        <!--<artifactId>ballerina-http</artifactId>-->
+                        <!--<version>${ballerina.version}</version>-->
+                    <!--</dependency>-->
+                    <!--<dependency>-->
+                        <!--<groupId>org.ballerinalang</groupId>-->
+                        <!--<artifactId>ballerina-jms</artifactId>-->
+                        <!--<version>${ballerina.jms.version}</version>-->
+                    <!--</dependency>-->
+                <!--</dependencies>-->
+            <!--</plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-remote-resources-plugin</artifactId>
