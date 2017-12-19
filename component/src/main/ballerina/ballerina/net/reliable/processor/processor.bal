@@ -62,26 +62,35 @@ function handleMessage() returns (error) {
     string destinationName = guaranteedProcessor.destinationName;
 
     blob retrievedMessageStream;
-    transaction with retries(0) {
-        retrievedMessageStream = guaranteedProcessor.retrieve(guaranteedProcessor.config, destinationName);
-        string empty = "";
-        if (retrievedMessageStream.toString("UTF-8") != empty) {
-            log:printDebug("message received at the processor");
-            //retrying is over
-            if(retryIteration == 0) {
-                retryCounterMap[guaranteedProcessor.taskId] = guaranteedProcessor.retryCount;
-                log:printDebug("moving message to dlc due to max retry exceeded");
-                guaranteedProcessor.store(guaranteedProcessor.config, destinationName+"_dlc", retrievedMessageStream);
-            } else {
-                error e = guaranteedProcessor.handler(retrievedMessageStream);
-                if (e != null) {
-                    log:printError("endpoint invocation failed for " + (guaranteedProcessor.retryCount - retryIteration + 1) + " iteration");
-                    retryCounterMap[guaranteedProcessor.taskId] =  retryIteration-1;
-                    abort;
+    try {
+        transaction with retries(0) {
+            retrievedMessageStream = guaranteedProcessor.retrieve(guaranteedProcessor.config, destinationName);
+            string empty = "";
+            if (retrievedMessageStream.toString("UTF-8") != empty) {
+                log:printDebug("message received at the processor");
+                //retrying is over
+                if (retryIteration == 0) {
+                    retryCounterMap[guaranteedProcessor.taskId] = guaranteedProcessor.retryCount;
+                    log:printWarn("moving message to dlc due to max retry exceeded");
+                    guaranteedProcessor.store(guaranteedProcessor.config, destinationName + "_dlc", retrievedMessageStream);
+                } else {
+                    error e = guaranteedProcessor.handler(retrievedMessageStream);
+                    if (e != null) {
+                        log:printError("endpoint invocation failed for " + (guaranteedProcessor.retryCount - retryIteration + 1) + " iteration");
+                        retryCounterMap[guaranteedProcessor.taskId] = retryIteration - 1;
+                        // catching error here and handling is not possible at the moment, due to an issue in
+                        // ballerina transactions. When its fixed try-catch, throwing the error
+                        // can be removed and we can do a transaction 'abort' after catching the error
+                        throw e;
+                    }
                 }
             }
+            retryCounterMap[guaranteedProcessor.taskId] = guaranteedProcessor.retryCount;
         }
-        retryCounterMap[guaranteedProcessor.taskId] = guaranteedProcessor.retryCount;
+    } catch (error e) {
+        // The log and try-catch block can be removed after fixing the the issue
+        // https://github.com/ballerinalang/ballerina/issues/4322
+        log:printDebug("error while transaction is caught. Rollback the transaction.");
     }
     return null;
 }
