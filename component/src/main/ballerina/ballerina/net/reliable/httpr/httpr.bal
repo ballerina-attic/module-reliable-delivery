@@ -198,21 +198,49 @@ public function handle (blob objectStream) (error) {
 
     // copying headers
     int i = 0;
+    // loop through all the distinct header values in the message
     while (i < lengthof keys) {
+        // Headers are contained as key,value pairs, but the key can be duplicated. Therefore for each key there is an
+        // array of values. When taking a single key we have to process the whole array of values.
+        // Each value will be a struct with string value and a map (map of string key, string value pairs to contain parameters)
         var header,_ = (json)requestHeaders[keys[i]];
-        json firstElement = header[0];
-        // ignoring params for the moment
-        json value = firstElement["value"];
-        request.addHeader(keys[i], value.toString());
+        http:HeaderValue[] reProducedHeaders = [];
+        int j = 0;
+        // loop through all the HeaderValues packed for a single header key
+        while(j < lengthof header) {
+            json headerElement = header[j];
+            json value = headerElement["value"];
+            // processing params in header
+            json param = headerElement["param"];
+            map paramMap = null;
+            if (param != null) {
+                paramMap = {};
+                string[] paramKeys = param.getKeys();
+                int k = 0;
+                // loop through parameters
+                while (k < lengthof paramKeys) {
+                    string key = paramKeys[k];
+                    json valueJson = param[key];
+                    paramMap[key] = valueJson.toString();
+                    k = k+1;
+                }
+            }
+            reProducedHeaders[j] = {value:value.toString(), param:paramMap};
+            j = j+1;
+        }
+        request.headers[keys[i]] =  reProducedHeaders;
         i =  i+1;
     }
 
     // Setting message content
     http:HeaderValue contentTypeHeader = request.getHeader("Content-Type");
-    string contentType = contentTypeHeader.value;
+    string contentType = "text/plain";
+    if (contentTypeHeader != null) {
+        contentType = contentTypeHeader.value;
+    }
     string payload = util:base64Decode(epInvoke.payload);
     TypeConversionError payloadError;
-    
+
     if (contentType == "application/json") {
         json jsonPayload;
         jsonPayload, payloadError = <json> payload;
@@ -241,7 +269,6 @@ public function handle (blob objectStream) (error) {
     http:Response response;
     http:HttpConnectorError connectorError;
 
-    println("invoking the backend");
     if ("get" == epInvoke.httpMethod) {
         response, connectorError = httpEp.get(epInvoke.path, request);
     } else if ("post" == epInvoke.httpMethod) {
@@ -265,8 +292,6 @@ public function handle (blob objectStream) (error) {
     if (connectorError != null) {
         backendError = {msg:"Backend invocation failed " + connectorError.msg};
     }
-
-    println(response);
 
     return backendError;
 }
@@ -315,7 +340,6 @@ struct Options {
     Proxy proxy;
 }
 
-
 struct Retry {
     int count;
     int interval;
@@ -341,4 +365,9 @@ struct Proxy {
     int port;
     string userName;
     string password;
+}
+
+struct HeaderValue {
+    string value;
+    map param;
 }
