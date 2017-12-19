@@ -120,11 +120,6 @@
         <artifactId>ballerina-http</artifactId>
         <version>${ballerina.version}</version>
       </dependency>
-      <dependency>
-        <groupId>org.testng</groupId>
-        <artifactId>testng</artifactId>
-        <version>${org.testng.version}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -244,7 +239,6 @@
     <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
     <maven.surefire.plugin.version>2.19.1</maven.surefire.plugin.version>
     <maven.remote.resources.plugin.version>1.5</maven.remote.resources.plugin.version>
-    <maven.jacoco.plugin.version>0.7.8</maven.jacoco.plugin.version>
   </properties>
 
   <modules>

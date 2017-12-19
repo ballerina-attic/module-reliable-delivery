@@ -4,7 +4,6 @@ import ballerina.util;
 import ballerina.log;
 import ballerina.net.http;
 import ballerina.net.reliable.processor;
-import ballerina.net.reliable;
 import ballerina.net.reliable.storejms;
 
 public const string MESSAGE_STORE_DESTINATION_NAME = "_BallerinaHTTPMessageStore_";
@@ -170,7 +169,7 @@ function storeMessage(blob storableStream, processor:GuaranteedProcessor guarant
 
 function convertToBlob(http:Request request, http:Options options, string serviceUri, string path, string httpMethod) (blob) {
     string encodedPayload = util:base64Encode(request.getStringPayload());
-    reliable:HttpEPInvoke epInvoke = {request:request, serviceUrl:serviceUri, path:path, httpMethod:httpMethod, connectorOptions:options, payload:encodedPayload};
+    HttpEPInvoke epInvoke = {request:request, serviceUrl:serviceUri, path:path, httpMethod:httpMethod, connectorOptions:options, payload:encodedPayload};
     var epInvokeJson,_ = <json> epInvoke;
     string epInvokeString = epInvokeJson.toString();
     blob serialized = epInvokeString.toBlob("UTF-8");
@@ -192,8 +191,6 @@ public function handle (blob objectStream) (error) {
     // Re-generate request headers from serialized request
     // Request headers are not getting de-serialized. Therefore we have to do that manually
     // All the maps are getting de-serialized as <string, any>. if the original map contained <string, struct>
-    // Struct will not get de-serialized, it will stay as json. But ballerina think this is 'any' value, not json.
-    // Due to that we can't cast it to json. (I have included a native function to do this for now)
     map requestHeaders = request.headers;
     string[] keys = requestHeaders.keys();
 
@@ -202,7 +199,7 @@ public function handle (blob objectStream) (error) {
     // copying headers
     int i = 0;
     while (i < lengthof keys) {
-        json header = reliable:anyToJson(requestHeaders[keys[i]]);
+        var header,_ = (json)requestHeaders[keys[i]];
         json firstElement = header[0];
         // ignoring params for the moment
         json value = firstElement["value"];
@@ -214,8 +211,7 @@ public function handle (blob objectStream) (error) {
     http:HeaderValue contentTypeHeader = request.getHeader("Content-Type");
     string contentType = contentTypeHeader.value;
     string payload = util:base64Decode(epInvoke.payload);
-    error payloadError;
-    
+    TypeConversionError payloadError;
     
     if (contentType == "application/json") {
         json jsonPayload;
@@ -229,9 +225,12 @@ public function handle (blob objectStream) (error) {
         request.setStringPayload(payload);
     }
 
-    if (payloadError != null) {
-        return payloadError;
-    }
+    // Below is commented because there is a bug in error checking and it always becomes an error even when there is none
+    // can be uncommented when its fixed from ballerina size
+    //if (payloadError != null) {
+    //    error e = {msg:"Error re-creating payload " + payloadError.msg};
+    //    return e;
+    //}
 
     // Invoking the backend
     error backendError = null;
@@ -242,6 +241,7 @@ public function handle (blob objectStream) (error) {
     http:Response response;
     http:HttpConnectorError connectorError;
 
+    println("invoking the backend");
     if ("get" == epInvoke.httpMethod) {
         response, connectorError = httpEp.get(epInvoke.path, request);
     } else if ("post" == epInvoke.httpMethod) {
@@ -289,8 +289,8 @@ struct HttpEPInvoke {
     string serviceUrl;
     string path;
     string httpMethod;
-    Request request;
-    Options connectorOptions;
+    http:Request request;
+    http:Options connectorOptions;
     string payload;
 }
 
