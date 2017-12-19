@@ -106,7 +106,7 @@ public connector HttpGuaranteedClient (string serviceUri, http:Options connector
     }
 }
 
-public connector HttpClient (string serviceUri, http:Options connectorOptions) {
+connector HttpClient (string serviceUri, http:Options connectorOptions) {
 
     action get (string path, http:Request req) (http:Response, http:HttpConnectorError) {
         blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "get") ;
