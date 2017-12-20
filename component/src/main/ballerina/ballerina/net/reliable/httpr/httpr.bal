@@ -8,7 +8,7 @@ import ballerina.net.reliable.storejms;
 
 public const string MESSAGE_STORE_DESTINATION_NAME = "_BallerinaHTTPMessageStore_";
 
-public const string UTF-8 = "UTF-8";
+public const string UTF8 = "UTF-8";
 
 @Description {value:"Http client connector for reliable outbound HTTP requests using guaranteed delivery pattern"}
 @Param {value:"serviceUri: Url of the service"}
@@ -177,7 +177,7 @@ function convertToBlob(http:Request request, http:Options options, string servic
     HttpEPInvoke epInvoke = {request:request, serviceUrl:serviceUri, path:path, httpMethod:httpMethod, connectorOptions:options, payload:encodedPayload};
     var epInvokeJson,_ = <json> epInvoke;
     string epInvokeString = epInvokeJson.toString();
-    blob serialized = epInvokeString.toBlob(UTF-8);
+    blob serialized = epInvokeString.toBlob(UTF8);
     return serialized;
 }
 
@@ -186,7 +186,7 @@ public function handle (blob objectStream) (error) {
     }
 
     // build EPInvoke instance
-    string epInvokeString = objectStream.toString(UTF-8);
+    string epInvokeString = objectStream.toString(UTF8);
     var epInvokeJson, ex = <json> epInvokeString;
 
     // todo: change this condition check to see if the error is null or not when casting issue fixed from Ballerina
