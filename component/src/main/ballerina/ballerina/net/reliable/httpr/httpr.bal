@@ -191,13 +191,15 @@ public function handle (blob objectStream) (error) {
 
     // todo: change this condition check to see if the error is null or not when casting issue fixed from Ballerina
     if (epInvokeJson == null) {
-        return ex;
+        error e = {msg:"error type conversion from " + ex.sourceType + " to " + ex.targetType + ". " + ex.msg, stackTrace:ex.stackTrace, cause:ex.cause };
+        return e;
     }
     var epInvoke, er = <HttpEPInvoke> epInvokeJson;
 
     // todo: change this condition check to see if the error is null or not when casting issue fixed from Ballerina
     if (epInvoke == null) {
-        return er;
+        error e = {msg:"error type conversion from " + er.sourceType + " to " + er.targetType + ". " + er.msg, stackTrace:er.stackTrace, cause:er.cause };
+        return e;
     }
 
     // access the request inside EPInvoke instance
@@ -312,13 +314,15 @@ public function handle (blob objectStream) (error) {
         backendError = {msg:"Backend invocation failed " + connectorError.msg};
     }
 
+    log:printTrace("http handler inkoved the endpoint with the message from store.");
+
     return backendError;
 }
 
 function generateMBConfiguration() (processor:GuaranteedProcessor) {
     processor:GuaranteedProcessor guaranteedConfig = {
-         config:{ "initialContextFactory":"org.apache.activemq.jndi.ActiveMQInitialContextFactory",
-                    "providerUrl":"tcp://127.0.0.1:61616",
+         config:{ "initialContextFactory":"wso2mbInitialContextFactory",
+                    "providerUrl":"amqp://admin:admin@carbon/carbon?brokerlist='tcp://127.0.0.1:5672'",
                     "connectionFactoryName":"QueueConnectionFactory"
                 },
          store: storejms:store,

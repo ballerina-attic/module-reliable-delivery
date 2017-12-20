@@ -67,16 +67,16 @@ function handleMessage() returns (error) {
             retrievedMessageStream = guaranteedProcessor.retrieve(guaranteedProcessor.config, destinationName);
             string empty = "";
             if (retrievedMessageStream.toString("UTF-8") != empty) {
-                log:printDebug("message received at the processor");
+                log:printTrace("message received at the guaranteed delivery processor");
                 //retrying is over
                 if (retryIteration == 0) {
                     retryCounterMap[guaranteedProcessor.taskId] = guaranteedProcessor.retryCount;
-                    log:printWarn("moving message to dlc due to max retry exceeded");
+                    log:printWarn("guaranteed delivery processor moving message to dlc due to max retry exceeded");
                     guaranteedProcessor.store(guaranteedProcessor.config, destinationName + "_dlc", retrievedMessageStream);
                 } else {
                     error e = guaranteedProcessor.handler(retrievedMessageStream);
                     if (e != null) {
-                        log:printError("endpoint invocation failed for " + (guaranteedProcessor.retryCount - retryIteration + 1) + " iteration");
+                        log:printDebug("endpoint invocation failed for " + (guaranteedProcessor.retryCount - retryIteration + 1) + " iteration");
                         retryCounterMap[guaranteedProcessor.taskId] = retryIteration - 1;
                         // catching error here and handling is not possible at the moment, due to an issue in
                         // ballerina transactions. When its fixed try-catch, throwing the error
@@ -90,7 +90,7 @@ function handleMessage() returns (error) {
     } catch (error e) {
         // The log and try-catch block can be removed after fixing the the issue
         // https://github.com/ballerinalang/ballerina/issues/4322
-        log:printDebug("error while transaction is caught. Rollback the transaction.");
+        log:printDebug("error while transaction is caught. Rollbacked the transaction.");
     }
     return null;
 }
