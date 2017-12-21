@@ -10,7 +10,7 @@
     <artifactId>ballerina-reliable-delivery</artifactId>
     <packaging>jar</packaging>
 
-    <name>ballerina-reliable-delivery</name>
+    <name>Ballerina - Reliable Delivery Component</name>
     <url>http://maven.apache.org</url>
 
     <dependencies>
