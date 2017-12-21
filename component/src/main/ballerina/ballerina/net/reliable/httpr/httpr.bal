@@ -225,10 +225,18 @@ public function handle (blob objectStream) (error) {
     if (contentType == "application/json") {
         json jsonPayload;
         jsonPayload, payloadError = <json> payload;
+        if (jsonPayload == null) {
+            error e = {msg:"Playload build error " + payloadError.msg, cause:payloadError.cause, stackTrace:payloadError.stackTrace};
+            return e;
+        }
         request.setJsonPayload(jsonPayload);
     } else if (contentType == "application/xml") {
         xml xmlPayload;
         xmlPayload, payloadError = <xml>payload;
+        if (xmlPayload == null) {
+            error e = {msg:"Playload build error " + payloadError.msg, cause:payloadError.cause, stackTrace:payloadError.stackTrace};
+            return e;
+        }
         request.setXmlPayload(xmlPayload);
     } else {
         request.setStringPayload(payload);
