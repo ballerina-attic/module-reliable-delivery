@@ -108,46 +108,6 @@ public connector HttpGuaranteedClient (string serviceUri, http:Options connector
     }
 }
 
-connector HttpClient (string serviceUri, http:Options connectorOptions) {
-
-    action get (string path, http:Request req) (http:Response, http:HttpConnectorError) {
-        blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "get") ;
-        return storeMessage(storableStream, generateMBConfiguration());
-    }
-    action post (string path, http:Request req) (http:Response, http:HttpConnectorError) {
-        blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "post") ;
-        return storeMessage(storableStream, generateMBConfiguration());
-    }
-    action head (string path, http:Request req) (http:Response, http:HttpConnectorError) {
-        blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "head") ;
-        return storeMessage(storableStream, generateMBConfiguration());
-    }
-    action put (string path, http:Request req) (http:Response, http:HttpConnectorError) {
-        blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "put") ;
-        return storeMessage(storableStream, generateMBConfiguration());
-    }
-    action patch (string path, http:Request req) (http:Response, http:HttpConnectorError) {
-        blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "patch") ;
-        return storeMessage(storableStream, generateMBConfiguration());
-    }
-    action delete (string path, http:Request req) (http:Response, http:HttpConnectorError) {
-        blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "delete") ;
-        return storeMessage(storableStream, generateMBConfiguration());
-    }
-    action options (string path, http:Request req) (http:Response, http:HttpConnectorError) {
-        blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "options") ;
-        return storeMessage(storableStream, generateMBConfiguration());
-    }
-    action forward (string path, http:Request req) (http:Response, http:HttpConnectorError) {
-        blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, "forward") ;
-        return storeMessage(storableStream, generateMBConfiguration());
-    }
-    action execute (string HTTPVerb, string path, http:Request req) (http:Response, http:HttpConnectorError) {
-        blob storableStream = convertToBlob(req, connectorOptions, serviceUri, path, HTTPVerb) ;
-        return storeMessage(storableStream, generateMBConfiguration());
-    }
-}
-
 function storeMessage(blob storableStream, processor:GuaranteedProcessor guaranteedProcessor)(http:Response, http:HttpConnectorError) {
 
     http:Response response = {};
@@ -317,20 +277,6 @@ public function handle (blob objectStream) (error) {
     log:printTrace("http handler inkoved the endpoint with the message from store.");
 
     return backendError;
-}
-
-function generateMBConfiguration() (processor:GuaranteedProcessor) {
-    processor:GuaranteedProcessor guaranteedConfig = {
-         config:{ "initialContextFactory":"wso2mbInitialContextFactory",
-                    "providerUrl":"amqp://admin:admin@carbon/carbon?brokerlist='tcp://127.0.0.1:5672'",
-                    "connectionFactoryName":"QueueConnectionFactory"
-                },
-         store: storejms:store,
-         retrieve: storejms:retrieve,
-         handler: handle
-     };
-    _= guaranteedConfig.startProcessor();
-    return guaranteedConfig;
 }
 
 struct HttpEPInvoke {
