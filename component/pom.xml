@@ -87,7 +87,8 @@
                         <processor>org.ballerinalang.codegen.BallerinaAnnotationProcessor</processor>
                     </processors>
                     <options>
-                        <nativeEntityProviderPackage>org.ballerinalang.net.reliable.generated.providers</nativeEntityProviderPackage>
+                        <nativeEntityProviderPackage>org.ballerinalang.net.reliable.generated.providers
+                        </nativeEntityProviderPackage>
                         <nativeEntityProviderClass>StandardNativeElementProvider</nativeEntityProviderClass>
                     </options>
                 </configuration>
@@ -230,6 +231,7 @@
     </build>
 
     <properties>
-        <generated.ballerina.source.directory>${project.build.directory}/../src/main/ballerina</generated.ballerina.source.directory>
+        <generated.ballerina.source.directory>${project.build.directory}/../src/main/ballerina
+        </generated.ballerina.source.directory>
     </properties>
 </project>
