@@ -90,7 +90,7 @@ function handleMessage() returns (error) {
     } catch (error e) {
         // The log and try-catch block can be removed after fixing the the issue
         // https://github.com/ballerinalang/ballerina/issues/4322
-        log:printDebug("error while transaction is caught. Rollbacked the transaction.");
+        log:printDebug("rollbacked the transaction due to an error: " + e.msg);
     }
     return null;
 }
