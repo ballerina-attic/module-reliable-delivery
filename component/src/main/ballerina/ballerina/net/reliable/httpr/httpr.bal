@@ -184,7 +184,11 @@ public function handle (blob objectStream) (error) {
             // if the header value is null due to some reason, skip the iteration
             next;
         }
-        var header,_ = (json)requestHeaders[keys[i]];
+        var header,e = (json[]) requestHeaders[keys[i]];
+        if (e != null) {
+            log:printWarn("skiping the message header due to error in processing: " + keys[i]);
+            next;
+        }
         http:HeaderValue[] reProducedHeaders = [];
         int j = 0;
         // loop through all the HeaderValues packed for a single header key
