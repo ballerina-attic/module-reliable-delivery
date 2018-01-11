@@ -2,7 +2,7 @@
     <parent>
         <artifactId>ballerina-reliable-delivery-parent</artifactId>
         <groupId>org.ballerinalang</groupId>
-        <version>0.95.1</version>
+        <version>0.95.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
